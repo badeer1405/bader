@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة متابعة الانضباط الوظيفي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Zain:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+  // Defensive polyfill: some sandboxed iframe environments lack ResizeObserver,
+  // which otherwise throws during Chart.js init and could break the whole page.
+  if(typeof window.ResizeObserver === 'undefined'){
+    window.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} };
+  }
+</script>
+<style>
+  :root{
+    --navy-950:#0B1220;
+    --navy-900:#111A2E;
+    --navy-800:#16233C;
+    --navy-700:#1E304F;
+    --line:#26375A;
+    --paper:#F5F6F8;
+    --card:#FFFFFF;
+    --ink:#101828;
+    --muted:#65748B;
+    --gold:#C9A24B;
+    --gold-deep:#9C7A2A;
+    --ok:#1F8F63;
+    --ok-bg:#E5F5EE;
+    --warn:#B8842A;
+    --warn-bg:#FBF0DD;
+    --risk:#C25B3F;
+    --risk-bg:#FBE9E3;
+    --crit:#A3352E;
+    --crit-bg:#F8E2E0;
+    --radius:10px;
+    --radius-lg:16px;
+    --shadow:0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:'Zain','Tajawal',sans-serif; font-variant-numeric:tabular-nums;}
+
+  /* ===== Header ===== */
+  header.top{
+    background:linear-gradient(160deg,var(--navy-950) 0%, var(--navy-800) 65%, var(--navy-700) 100%);
+    color:#fff;
+    padding:34px 40px 68px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(600px 240px at 85% -20%, rgba(201,162,75,.20), transparent 60%),
+      radial-gradient(500px 220px at 8% 120%, rgba(201,162,75,.10), transparent 60%);
+    pointer-events:none;
+  }
+  .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:24px; position:relative; z-index:1; flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:14px;}
+  .brand-mark{
+    width:46px; height:46px; border-radius:12px;
+    background:linear-gradient(145deg,var(--gold),var(--gold-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:20px; color:var(--navy-950);
+    box-shadow:0 6px 16px rgba(201,162,75,.35);
+    flex-shrink:0;
+  }
+  .brand h1{margin:0; font-size:22px; font-weight:700; letter-spacing:.2px;}
+  .brand p{margin:2px 0 0; font-size:13px; color:#AEB9CC; font-weight:400;}
+  .period-pill{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    padding:9px 18px; border-radius:999px;
+    font-size:13px; color:#D7DEEA;
+    display:flex; align-items:center; gap:8px;
+  }
+  .period-pill b{color:#fff; font-weight:700;}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 3px rgba(201,162,75,.25);}
+
+  /* ===== KPI band ===== */
+  .kpi-wrap{
+    max-width:1320px; margin:-42px auto 0; padding:0 40px 0;
+    position:relative; z-index:2;
+  }
+  .kpi-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:16px;
+  }
+  .kpi{
+    background:var(--card); border-radius:var(--radius-lg);
+    padding:20px 20px 18px; box-shadow:var(--shadow);
+    border-top:3px solid var(--line);
+  }
+  .kpi .label{font-size:12.5px; color:var(--muted); font-weight:500; display:flex; align-items:center; justify-content:space-between;}
+  .kpi .value{font-size:32px; font-weight:700; margin-top:10px; color:var(--navy-950); line-height:1;}
+  .kpi .sub{margin-top:8px; font-size:12px; color:var(--muted);}
+  .kpi.accent{border-top-color:var(--gold);}
+  .kpi.accent .value{color:var(--gold-deep);}
+  .kpi.risk{border-top-color:var(--risk);}
+  .kpi.risk .value{color:var(--crit);}
+  .badge-mini{font-size:11px; padding:2px 8px; border-radius:999px; font-weight:700;}
+
+  /* ===== Main ===== */
+  main{max-width:1320px; margin:0 auto; padding:28px 40px 60px;}
+
+  .panel{
+    background:var(--card); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow); padding:22px 24px; margin-bottom:20px;
+  }
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .panel-head h2{font-size:16.5px; font-weight:700; margin:0; color:var(--navy-950); display:flex; align-items:center; gap:8px;}
+  .panel-head h2 .tag{width:4px; height:16px; background:var(--gold); border-radius:2px; display:inline-block;}
+  .panel-head .hint{font-size:12.5px; color:var(--muted);}
+
+  .charts-row{display:grid; grid-template-columns:1.35fr 1fr; gap:20px;}
+  .chart-box{height:300px; position:relative;}
+
+  select.metricSel{
+    border:1px solid #E2E6ED; background:var(--paper); color:var(--ink);
+    font-family:'Tajawal',sans-serif; font-size:13px; padding:7px 12px;
+    border-radius:8px; cursor:pointer; font-weight:500;
+  }
+
+  /* ===== Controls ===== */
+  .controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .search-box{
+    position:relative; flex:1; min-width:220px;
+  }
+  .search-box input{
+    width:100%; padding:10px 38px 10px 14px; border-radius:9px;
+    border:1px solid #E2E6ED; background:var(--paper);
+    font-family:'Tajawal',sans-serif; font-size:13.5px; color:var(--ink);
+  }
+  .search-box input:focus{outline:2px solid var(--gold); outline-offset:1px; background:#fff;}
+  .search-box svg{position:absolute; right:12px; top:50%; transform:translateY(-50%); opacity:.45;}
+
+  .chip{
+    border:1px solid #E2E6ED; background:#fff; color:var(--muted);
+    padding:8px 14px; border-radius:999px; font-size:12.5px; font-weight:500;
+    cursor:pointer; white-space:nowrap; transition:.15s;
+    font-family:'Tajawal',sans-serif;
+  }
+  .chip:hover{border-color:var(--gold);}
+  .chip.active{background:var(--navy-950); color:#fff; border-color:var(--navy-950);}
+
+  .sort-select{
+    display:flex; align-items:center; gap:8px; margin-inline-start:auto;
+  }
+  .sort-select label{font-size:12.5px; color:var(--muted); font-weight:500;}
+  .sort-select select, .sort-select button{
+    border:1px solid #E2E6ED; background:#fff; border-radius:8px;
+    font-family:'Tajawal',sans-serif; font-size:13px; padding:8px 12px; cursor:pointer; color:var(--ink);
+  }
+  .sort-select button{display:flex; align-items:center; gap:6px; font-weight:500;}
+  .sort-select button svg{transition:transform .2s;}
+  .sort-select button.desc svg{transform:rotate(180deg);}
+
+  /* ===== Table ===== */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{
+    text-align:right; font-size:12px; color:var(--muted); font-weight:700;
+    padding:10px 12px; border-bottom:2px solid #EEF0F3; cursor:pointer; user-select:none;
+    white-space:nowrap;
+  }
+  thead th:hover{color:var(--navy-950);}
+  thead th.active{color:var(--gold-deep);}
+  thead th .arrow{font-size:10px; margin-inline-start:3px; opacity:.6;}
+  tr.group-row td{
+    background:var(--navy-950); color:#fff; font-weight:700;
+    padding:10px 14px; border-bottom:none;
+  }
+  tr.group-row:hover{background:var(--navy-950);}
+  tr.group-row .g-name{display:flex; align-items:center; gap:10px; font-size:14px;}
+  tr.group-row .g-count{
+    background:rgba(255,255,255,.14); font-size:11px; font-weight:600;
+    padding:2px 9px; border-radius:999px;
+  }
+  tr.group-row .g-stats{display:flex; gap:18px; justify-content:flex-end; font-size:12.5px; font-weight:500; color:#D7DEEA;}
+  tr.group-row .g-stats b{color:var(--gold); font-weight:700; font-family:'Zain','Tajawal',sans-serif; font-size:14px; margin-inline-start:4px;}
+  tr.sub-row td{padding-inline-start:26px;}
+
+  .print-all-btn{
+    display:flex; align-items:center; gap:7px;
+    background:var(--navy-950); color:#fff; border:none;
+    padding:9px 16px; border-radius:8px; font-size:12.5px; font-weight:600;
+    cursor:pointer; font-family:'Tajawal',sans-serif; transition:.15s;
+  }
+  .print-all-btn:hover{background:var(--navy-700);}
+  .print-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:30px; height:30px; border-radius:8px;
+    border:1px solid #E2E6ED; background:#fff; color:var(--navy-900);
+    cursor:pointer; transition:.15s;
+  }
+  .print-btn:hover{background:var(--gold); border-color:var(--gold); color:#fff;}
+  tbody td{padding:11px 12px; border-bottom:1px solid #F1F2F5; color:var(--ink); vertical-align:middle;}
+  tbody tr:hover{background:#FAFAFB;}
+  tbody tr:last-child td{border-bottom:none;}
+  td.rank{color:var(--muted); font-weight:700; width:34px;}
+  td.name{font-weight:600;}
+  td.dept{color:var(--muted);}
+  td.numcell{font-family:'Zain','Tajawal',sans-serif; font-weight:700; font-size:14.5px;}
+  .dept-pill{
+    display:inline-block; background:var(--navy-950); color:#fff;
+    font-size:11px; padding:3px 10px; border-radius:999px; font-weight:500;
+  }
+  .status-badge{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700;
+    padding:4px 11px; border-radius:999px;
+  }
+  .status-badge .d{width:6px; height:6px; border-radius:50%;}
+  .s-ok{background:var(--ok-bg); color:var(--ok);}
+  .s-ok .d{background:var(--ok);}
+  .s-warn{background:var(--warn-bg); color:var(--warn);}
+  .s-warn .d{background:var(--warn);}
+  .s-risk{background:var(--risk-bg); color:var(--risk);}
+  .s-risk .d{background:var(--risk);}
+  .s-crit{background:var(--crit-bg); color:var(--crit);}
+  .s-crit .d{background:var(--crit);}
+
+  .table-foot{display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:12.5px; color:var(--muted);}
+
+  .legend-row{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted);}
+  .legend-row span{display:flex; align-items:center; gap:6px;}
+  .legend-row .d{width:8px; height:8px; border-radius:50%;}
+
+  footer{text-align:center; padding:26px 20px 40px; color:var(--muted); font-size:12px;}
+
+  @media (max-width:1000px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .charts-row{grid-template-columns:1fr;}
+    header.top, main, .kpi-wrap{padding-left:18px; padding-right:18px;}
+  }
+
+  /* ===================================================== */
+  /* ===============  Employee PDF report  ================ */
+  /* ===================================================== */
+  #printArea{ display:none; }
+
+  .report-page{
+    width:190mm;
+    min-height:277mm;
+    margin:0 auto 12mm;
+    background:#fff;
+    padding:14mm 16mm 16mm;
+    position:relative;
+    font-family:'Tajawal',sans-serif;
+    color:var(--ink);
+    page-break-after:always;
+  }
+  .report-page:last-child{page-break-after:auto;}
+
+  .rp-topbar{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    border-bottom:3px solid var(--navy-950); padding-bottom:14px; margin-bottom:22px;
+  }
+  .rp-brand{display:flex; align-items:center; gap:12px;}
+  .rp-brand .mark{
+    width:38px; height:38px; border-radius:10px;
+    background:linear-gradient(145deg,var(--gold),var(--gold-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:16px; color:var(--navy-950);
+  }
+  .rp-brand h2{margin:0; font-size:16.5px; font-weight:700; color:var(--navy-950);}
+  .rp-brand p{margin:2px 0 0; font-size:11px; color:var(--muted);}
+  .rp-meta{text-align:left; font-size:11px; color:var(--muted); line-height:1.9;}
+  .rp-meta b{color:var(--ink); font-weight:600;}
+
+  .rp-identity{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--paper); border-radius:12px; padding:18px 20px; margin-bottom:22px;
+    border:1px solid #EEF0F3;
+  }
+  .rp-identity .who .name{font-size:21px; font-weight:700; color:var(--navy-950); margin:0 0 6px;}
+  .rp-identity .who .meta-line{display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted);}
+
+  .rp-section-title{
+    font-size:13px; font-weight:700; color:var(--navy-950);
+    display:flex; align-items:center; gap:8px; margin:26px 0 14px;
+  }
+  .rp-section-title .tag{width:4px; height:14px; background:var(--gold); border-radius:2px; display:inline-block;}
+
+  .rp-stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:6px;}
+  .rp-stat{
+    border:1px solid #E7E9ED; border-radius:10px; padding:14px 12px; text-align:center;
+  }
+  .rp-stat .n{font-family:'Zain','Tajawal',sans-serif; font-size:24px; font-weight:700; color:var(--navy-950);}
+  .rp-stat .l{font-size:11px; color:var(--muted); margin-top:4px;}
+
+  .rp-deduction-box{
+    margin-top:14px; border-radius:12px; padding:16px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--navy-950); color:#fff;
+  }
+  .rp-deduction-box .l{font-size:12.5px; color:#C7D0E0;}
+  .rp-deduction-box .n{font-family:'Zain','Tajawal',sans-serif; font-size:26px; font-weight:700; color:var(--gold);}
+
+  .rp-table{width:100%; border-collapse:collapse; margin-top:6px; font-size:12.5px;}
+  .rp-table th{
+    text-align:right; background:var(--paper); color:var(--muted);
+    font-weight:600; font-size:11.5px; padding:9px 12px; border-bottom:1px solid #E7E9ED;
+  }
+  .rp-table td{padding:10px 12px; border-bottom:1px solid #F1F2F5;}
+
+  .rp-verdict{
+    margin-top:20px; padding:14px 18px; border-radius:10px; font-size:12.5px; line-height:1.9;
+    border-inline-start:4px solid var(--muted);
+  }
+  .rp-verdict.s-ok{background:var(--ok-bg); border-color:var(--ok); color:#1a5c42;}
+  .rp-verdict.s-warn{background:var(--warn-bg); border-color:var(--warn); color:#7a5a1c;}
+  .rp-verdict.s-risk{background:var(--risk-bg); border-color:var(--risk); color:#8a3f2b;}
+  .rp-verdict.s-crit{background:var(--crit-bg); border-color:var(--crit); color:#7a251f;}
+  .rp-verdict b{display:block; margin-bottom:3px; font-size:13px;}
+
+  .rp-signatures{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:44px;}
+  .rp-sign{text-align:center; font-size:11.5px; color:var(--muted);}
+  .rp-sign .line{border-top:1px solid #C7CCD6; margin-bottom:8px; padding-top:34px;}
+  .rp-sign .role{font-weight:700; color:var(--ink); font-size:12.5px; margin-bottom:2px;}
+
+  .rp-footer{
+    position:absolute; bottom:10mm; right:16mm; left:16mm;
+    display:flex; justify-content:space-between; font-size:10px; color:var(--muted);
+    border-top:1px solid #EEF0F3; padding-top:8px;
+  }
+
+  @media print{
+    @page{ size:A4; margin:0; }
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{
+      display:block; position:absolute; inset:0; width:auto;
+    }
+    .report-page{ margin:0; box-shadow:none; width:auto; min-height:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div class="brand">
+      <div class="brand-mark">ح.و</div>
+      <div>
+        <h1>لوحة متابعة الانضباط الوظيفي</h1>
+        <p>تقرير التأخيرات، الاستئذانات، الإجازات والغياب — لأصحاب الصلاحية</p>
+      </div>
+    </div>
+    <div class="period-pill"><span class="dot"></span> الفترة المرصودة: <b>26 أغسطس – 10 سبتمبر</b></div>
+  </div>
+</header>
+
+<div class="kpi-wrap">
+  <div class="kpi-grid" id="kpiGrid"></div>
+</div>
+
+<main>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="tag"></span>الأداء حسب الإدارة</h2>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="hint">عرض حسب المؤشر:</span>
+        <select class="metricSel" id="metricSelect">
+          <option value="deduction">الحسم المالي (ر.س)</option>
+          <option value="late">دقائق التأخير</option>
+          <option value="absence">أيام الغياب</option>
+          <option value="perm">الاستئذانات</option>
+        </select>
+      </div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="deptChart"></canvas></div>
+      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+    </div>
+    <div class="legend-row" style="margin-top:14px;">
+      <span><span class="d" style="background:var(--ok)"></span> ملتزم — لا مخالفات</span>
+      <span><span class="d" style="background:var(--warn)"></span> متوسط — مخالفات بسيطة</span>
+      <span><span class="d" style="background:var(--risk)"></span> مرتفع — يستدعي المتابعة</span>
+      <span><span class="d" style="background:var(--crit)"></span> حرج — يستدعي إجراء فوري</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="tag"></span>سجل الموظفين التفصيلي</h2>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <span class="hint" id="countHint" title="اختر «الإدارة» من الفرز لعرض إجماليات كل قسم"></span>
+        <button id="printAllBtn" class="print-all-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-6a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1h-2M6 14h12v7H6v-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          طباعة تقارير المعروض
+        </button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="ابحث عن اسم موظف...">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#65748B" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#65748B" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div id="deptChips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      <div class="sort-select">
+        <label>فرز حسب:</label>
+        <select id="sortField">
+          <option value="deduction">الحسم المالي</option>
+          <option value="late">دقائق التأخير</option>
+          <option value="absence">الغياب</option>
+          <option value="perm">الاستئذان</option>
+          <option value="leave">الإجازات</option>
+          <option value="name">الاسم</option>
+          <option value="dept">الإدارة</option>
+        </select>
+        <button id="sortDirBtn" class="desc">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4v16m0 0l-5-5m5 5l5-5" stroke="#101828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="sortDirLabel">تنازلي</span>
+        </button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr id="tableHeadRow">
+          <th style="cursor:default;">#</th>
+          <th data-field="name"><span class="th-label">الموظف</span></th>
+          <th data-field="dept"><span class="th-label">الإدارة</span></th>
+          <th data-field="late"><span class="th-label">التأخير (د)</span></th>
+          <th data-field="perm"><span class="th-label">الاستئذانات</span></th>
+          <th data-field="leave"><span class="th-label">الإجازات</span></th>
+          <th data-field="absence"><span class="th-label">الغياب</span></th>
+          <th data-field="deduction"><span class="th-label">الحسم (ر.س)</span></th>
+          <th style="cursor:default;">الحالة</th>
+          <th style="cursor:default;">طباعة</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="table-foot">
+      <span id="footInfo"></span>
+      <span>ترتيب افتراضي: الأعلى خصمًا أولًا — لتسهيل مراجعة الإدارة العليا</span>
+    </div>
+  </div>
+
+</main>
+
+<footer>لوحة معلومات آلية مبنية على بيانات ملف التأخيرات المرفوع — للاستخدام الداخلي بغرض المتابعة الإدارية.</footer>
+
+<div id="printArea"></div>
+
+<script>
+const RAW = [{"name": "فواز سعد الحارثي", "dept": "إدارية", "late": 88, "perm": 1, "leave": 0, "absence": 0, "deduction": 47}, {"name": "طاهر سعد السواط", "dept": "تنمية", "late": 0, "perm": 1, "leave": 0, "absence": 2, "deduction": 394}, {"name": "بدر مستور الجعيد", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "فهد عبدالرحمن الجبرتي", "dept": "إدارية", "late": 21, "perm": 1, "leave": 0, "absence": 0, "deduction": 10}, {"name": "تركي الازوري", "dept": "مالية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "عبدالعزيز حمدان السواط", "dept": "إدارية", "late": 0, "perm": 1, "leave": 0, "absence": 0, "deduction": 0}, {"name": "زياد الصخيري", "dept": "إدارية", "late": 0, "perm": 0, "leave": 3, "absence": 0, "deduction": 0}, {"name": "محمد عبدالله محمد", "dept": "جودة", "late": 0, "perm": 1, "leave": 0, "absence": 0, "deduction": 0}, {"name": "علاء عابد العوفي", "dept": "مالية", "late": 0, "perm": 3, "leave": 0, "absence": 0, "deduction": 0}, {"name": "نايف السواط", "dept": "تنمية", "late": 0, "perm": 1, "leave": 1, "absence": 0, "deduction": 0}, {"name": "أحمد محمد الزيادي", "dept": "اعلام", "late": 17, "perm": 0, "leave": 0, "absence": 0, "deduction": 10}, {"name": "حسن احمد طه", "dept": "تنفيذية", "late": 0, "perm": 0, "leave": 5, "absence": 0, "deduction": 0}, {"name": "حامد الربيعي", "dept": "اعلام", "late": 0, "perm": 0, "leave": 2, "absence": 2, "deduction": 394}, {"name": "عامر حسين الأشول", "dept": "تعليمية", "late": 0, "perm": 6, "leave": 0, "absence": 0, "deduction": 0}, {"name": "علي محمد حسين خرد", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "مسفر صلاح العدواني", "dept": "مالية", "late": 57, "perm": 3, "leave": 0, "absence": 1, "deduction": 241}, {"name": "محمد حامد الأزوري", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "بدر الثبيتي", "dept": "إدارية", "late": 44, "perm": 0, "leave": 0, "absence": 12, "deduction": 2364}, {"name": "انور السندي", "dept": "تنفيذية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "لؤي السيالي", "dept": "حوكمة", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "منصور السواط", "dept": "تنمية", "late": 0, "perm": 1, "leave": 0, "absence": 0, "deduction": 0}, {"name": "هاني عيضة الجعيد", "dept": "مالية", "late": 74, "perm": 2, "leave": 1, "absence": 0, "deduction": 29}, {"name": "سالم الربيعي", "dept": "تنمية", "late": 0, "perm": 0, "leave": 2, "absence": 0, "deduction": 0}, {"name": "عبدالله سالمين", "dept": "تعليمية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "عبدالعزيز الوذناني", "dept": "جودة", "late": 161, "perm": 1, "leave": 1, "absence": 1, "deduction": 236}, {"name": "على الوذيناني", "dept": "مالية", "late": 149, "perm": 1, "leave": 0, "absence": 2, "deduction": 616}, {"name": "سيف سلطان الصواط", "dept": "اعلام", "late": 49, "perm": 0, "leave": 6, "absence": 0, "deduction": 15}, {"name": "سلطان عيسى الزهراني", "dept": "تنفيذية", "late": 0, "perm": 0, "leave": 0, "absence": 1, "deduction": 152}, {"name": "محمد علام", "dept": "تعليمية", "late": 0, "perm": 0, "leave": 1, "absence": 0, "deduction": 0}, {"name": "عبدالنافع", "dept": "تعليمية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "صقر الذويبي", "dept": "تعليمية", "late": 0, "perm": 0, "leave": 10, "absence": 0, "deduction": 0}, {"name": "إبراهيم هوساوي", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "أحمد علي هوساوي", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "عبدالعزيز عوض السواط", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "حسين عايش الزايدي", "dept": "إدارية", "late": 0, "perm": 0, "leave": 4, "absence": 0, "deduction": 0}, {"name": "عبدالحميد أبوبكر", "dept": "إدارية", "late": 0, "perm": 0, "leave": 10, "absence": 0, "deduction": 0}, {"name": "بدكل احمد ابوبكر", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "مد معتصم", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "محمد ازمير", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "ذعار الوذيناني", "dept": "اعلام", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "عواض الربيعي", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "عواض السواط", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}, {"name": "الحارس / محمد محيل", "dept": "إدارية", "late": 0, "perm": 0, "leave": 0, "absence": 0, "deduction": 0}];
+
+// ---------- classification ----------
+function classify(r){
+  if(r.deduction >= 500 || r.absence >= 5) return 'crit';
+  if(r.deduction >= 100 || r.late >= 100 || r.absence >= 2) return 'risk';
+  if(r.deduction > 0 || r.late > 0 || r.perm > 0 || r.leave > 0 || r.absence > 0) return 'warn';
+  return 'ok';
+}
+const STATUS_LABEL = {ok:'ملتزم', warn:'متوسط', risk:'مرتفع', crit:'حرج'};
+const STATUS_CLASS = {ok:'s-ok', warn:'s-warn', risk:'s-risk', crit:'s-crit'};
+
+const DATA = RAW.map(r => ({...r, status: classify(r)}));
+const DEPTS = [...new Set(DATA.map(d=>d.dept))];
+
+// ---------- KPIs ----------
+const totalEmp = DATA.length;
+const totalLate = DATA.reduce((s,r)=>s+r.late,0);
+const totalAbsence = DATA.reduce((s,r)=>s+r.absence,0);
+const totalDeduction = DATA.reduce((s,r)=>s+r.deduction,0);
+const violators = DATA.filter(r=>r.status!=='ok').length;
+const critCount = DATA.filter(r=>r.status==='crit').length;
+
+const kpiGrid = document.getElementById('kpiGrid');
+kpiGrid.innerHTML = `
+  <div class="kpi">
+    <div class="label">إجمالي الموظفين المرصودين</div>
+    <div class="value num">${totalEmp}</div>
+    <div class="sub">عبر ${DEPTS.length} إدارات</div>
+  </div>
+  <div class="kpi">
+    <div class="label">موظفون لديهم مخالفة</div>
+    <div class="value num">${violators}</div>
+    <div class="sub">${((violators/totalEmp)*100).toFixed(0)}% من إجمالي الموظفين</div>
+  </div>
+  <div class="kpi">
+    <div class="label">إجمالي دقائق التأخير</div>
+    <div class="value num">${totalLate.toLocaleString('ar')}</div>
+    <div class="sub">دقيقة خلال الفترة</div>
+  </div>
+  <div class="kpi">
+    <div class="label">إجمالي أيام الغياب</div>
+    <div class="value num">${totalAbsence.toLocaleString('ar')}</div>
+    <div class="sub">يوم غياب مسجل</div>
+  </div>
+  <div class="kpi accent">
+    <div class="label">إجمالي الحسم المالي</div>
+    <div class="value num">${totalDeduction.toLocaleString('ar')} ر.س</div>
+    <div class="sub">${critCount} حالة حرجة ضمن الإجمالي</div>
+  </div>
+`;
+
+// ---------- Department chart ----------
+const deptCanvas = document.getElementById('deptChart');
+let deptChart;
+const metricLabels = {deduction:'الحسم المالي (ر.س)', late:'دقائق التأخير', absence:'أيام الغياب', perm:'الاستئذانات'};
+
+function aggByDept(metric){
+  const map = {};
+  DEPTS.forEach(d=>map[d]=0);
+  DATA.forEach(r=>map[r.dept]+=r[metric]);
+  const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  return {labels:entries.map(e=>e[0]), values:entries.map(e=>e[1])};
+}
+
+function renderDeptChart(metric){
+  try{
+    const {labels, values} = aggByDept(metric);
+    if(deptChart) deptChart.destroy();
+    deptChart = new Chart(deptCanvas, {
+      type:'bar',
+      data:{
+        labels,
+        datasets:[{
+          label: metricLabels[metric],
+          data: values,
+          backgroundColor: values.map((v,i)=> i===0 ? '#A3352E' : (i===1 ? '#C9A24B' : '#1E304F')),
+          borderRadius:6,
+          maxBarThickness:38
+        }]
+      },
+      options:{
+        indexAxis:'y',
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{rtl:true, titleFont:{family:'Tajawal'}, bodyFont:{family:'Tajawal'}} },
+        scales:{
+          x:{ grid:{color:'#F1F2F5'}, ticks:{font:{family:'Tajawal', size:11}} },
+          y:{ grid:{display:false}, ticks:{font:{family:'Tajawal', size:12}} }
+        }
+      }
+    });
+  }catch(err){
+    console.error('تعذر رسم مخطط الإدارات:', err);
+  }
+}
+
+document.getElementById('metricSelect').addEventListener('change', e=>renderDeptChart(e.target.value));
+
+// ---------- Status doughnut ----------
+function renderStatusDoughnut(){
+  try{
+    const statusCounts = {ok:0,warn:0,risk:0,crit:0};
+    DATA.forEach(r=>statusCounts[r.status]++);
+    new Chart(document.getElementById('statusChart'), {
+      type:'doughnut',
+      data:{
+        labels:['ملتزم','متوسط','مرتفع','حرج'],
+        datasets:[{
+          data:[statusCounts.ok, statusCounts.warn, statusCounts.risk, statusCounts.crit],
+          backgroundColor:['#1F8F63','#B8842A','#C25B3F','#A3352E'],
+          borderWidth:3,
+          borderColor:'#fff'
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        cutout:'62%',
+        plugins:{
+          legend:{ position:'bottom', labels:{font:{family:'Tajawal', size:12}, padding:14, usePointStyle:true} },
+          tooltip:{ rtl:true, bodyFont:{family:'Tajawal'}, titleFont:{family:'Tajawal'} }
+        }
+      }
+    });
+  }catch(err){
+    console.error('تعذر رسم مخطط الحالات:', err);
+  }
+}
+
+// ---------- Department chips ----------
+const chipsWrap = document.getElementById('deptChips');
+let activeDept = 'all';
+function renderChips(){
+  const all = [{key:'all', label:'الكل'}].concat(DEPTS.map(d=>({key:d, label:d})));
+  chipsWrap.innerHTML = all.map(c=>
+    `<button class="chip ${c.key===activeDept?'active':''}" data-dept="${c.key}">${c.label}</button>`
+  ).join('');
+  chipsWrap.querySelectorAll('.chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ activeDept = btn.dataset.dept; renderChips(); renderTable(); });
+  });
+}
+
+// ---------- Table ----------
+let sortField = 'deduction';
+let sortDir = 'desc';
+let searchTerm = '';
+
+function rowHtml(r, i){
+  const empIdx = DATA.indexOf(r);
+  return `
+    <tr class="sub-row">
+      <td class="rank num">${i}</td>
+      <td class="name">${r.name}</td>
+      <td class="dept"><span class="dept-pill">${r.dept}</span></td>
+      <td class="numcell">${r.late}</td>
+      <td class="numcell">${r.perm}</td>
+      <td class="numcell">${r.leave}</td>
+      <td class="numcell">${r.absence}</td>
+      <td class="numcell">${r.deduction.toLocaleString('ar')}</td>
+      <td><span class="status-badge ${STATUS_CLASS[r.status]}"><span class="d"></span>${STATUS_LABEL[r.status]}</span></td>
+      <td>
+        <button class="print-btn" data-emp="${empIdx}" title="طباعة تقرير ${r.name}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-6a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1h-2M6 14h12v7H6v-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </td>
+    </tr>`;
+}
+
+function sortRows(rows, field, dir){
+  return rows.sort((a,b)=>{
+    let va = a[field], vb = b[field];
+    if(typeof va === 'string'){
+      return dir==='asc' ? va.localeCompare(vb,'ar') : vb.localeCompare(va,'ar');
+    }
+    return dir==='asc' ? va-vb : vb-va;
+  });
+}
+
+function renderTable(){
+  let rows = DATA.filter(r =>
+    (activeDept==='all' || r.dept===activeDept) &&
+    (searchTerm==='' || r.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  let bodyHtml = '';
+
+  if(sortField === 'dept'){
+    // ----- Grouped view: real department grouping with subtotals -----
+    const groups = {};
+    rows.forEach(r=>{
+      (groups[r.dept] = groups[r.dept] || []).push(r);
+    });
+
+    let deptEntries = Object.entries(groups).map(([dept, list])=>{
+      const totals = list.reduce((acc,r)=>{
+        acc.perm += r.perm; acc.absence += r.absence; acc.leave += r.leave; acc.deduction += r.deduction; acc.late += r.late;
+        return acc;
+      }, {perm:0, absence:0, leave:0, deduction:0, late:0});
+      return {dept, list, totals};
+    });
+
+    deptEntries.sort((a,b)=> sortDir==='asc'
+      ? a.dept.localeCompare(b.dept,'ar')
+      : b.dept.localeCompare(a.dept,'ar'));
+
+    deptEntries.forEach(entry=>{
+      const sortedList = sortRows([...entry.list], 'deduction', 'desc');
+      bodyHtml += `
+        <tr class="group-row">
+          <td colspan="10">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+              <div class="g-name">${entry.dept} <span class="g-count">${entry.list.length} موظف</span></div>
+              <div class="g-stats">
+                <span>مجموع الاستئذانات <b>${entry.totals.perm}</b></span>
+                <span>مجموع الغياب <b>${entry.totals.absence}</b></span>
+                <span>مجموع الإجازات <b>${entry.totals.leave}</b></span>
+                <span>مجموع الحسم <b>${entry.totals.deduction.toLocaleString('ar')} ر.س</b></span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+      sortedList.forEach((r,i)=>{ bodyHtml += rowHtml(r, i+1); });
+    });
+
+  } else {
+    // ----- Flat sorted view -----
+    sortRows(rows, sortField, sortDir);
+    rows.forEach((r,i)=>{ bodyHtml += rowHtml(r, i+1); });
+  }
+
+  document.getElementById('tableBody').innerHTML = bodyHtml ||
+    `<tr><td colspan="10" style="text-align:center; padding:30px; color:var(--muted);">لا توجد نتائج مطابقة</td></tr>`;
+
+  document.getElementById('countHint').textContent = `${rows.length} من ${DATA.length} موظف`;
+  document.getElementById('footInfo').textContent = sortField==='dept'
+    ? `مجموعة حسب الإدارة — ${rows.length} سجل`
+    : `عرض ${rows.length} سجل`;
+
+  document.querySelectorAll('#tableHeadRow th[data-field]').forEach(th=>{
+    th.classList.toggle('active', th.dataset.field===sortField);
+    const old = th.querySelector('.arrow');
+    if(old) old.remove();
+    if(th.dataset.field===sortField){
+      const span = document.createElement('span');
+      span.className = 'arrow';
+      span.textContent = sortDir==='asc' ? '▲' : '▼';
+      th.appendChild(span);
+    }
+  });
+}
+
+document.querySelectorAll('#tableHeadRow th[data-field]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const f = th.dataset.field;
+    if(sortField===f){ sortDir = sortDir==='asc'?'desc':'asc'; }
+    else { sortField=f; sortDir = 'desc'; }
+    document.getElementById('sortField').value = sortField;
+    syncSortBtn();
+    renderTable();
+  });
+});
+
+document.getElementById('sortField').addEventListener('change', e=>{
+  sortField = e.target.value; renderTable();
+});
+document.getElementById('sortDirBtn').addEventListener('click', ()=>{
+  sortDir = sortDir==='asc'?'desc':'asc';
+  syncSortBtn();
+  renderTable();
+});
+function syncSortBtn(){
+  const btn = document.getElementById('sortDirBtn');
+  btn.classList.toggle('desc', sortDir==='desc');
+  document.getElementById('sortDirLabel').textContent = sortDir==='desc' ? 'تنازلي' : 'تصاعدي';
+}
+
+document.getElementById('searchInput').addEventListener('input', e=>{
+  searchTerm = e.target.value; renderTable();
+});
+
+// ---------- Employee PDF report ----------
+const VERDICT_TEXT = {
+  ok: {
+    title:'سجل نظامي — لا توجد ملاحظات',
+    body:'لم يسجَّل على الموظف خلال هذه الفترة أي تأخير أو غياب أو خصم مالي. يُنصح بالاستمرار على هذا المستوى من الانضباط.'
+  },
+  warn: {
+    title:'مستوى متوسط — يحتاج متابعة روتينية',
+    body:'سُجّلت على الموظف مخالفات بسيطة (استئذان/إجازة أو تأخير محدود) لا تستدعي إجراءً رسميًا، ويكتفى بالمتابعة الدورية.'
+  },
+  risk: {
+    title:'مستوى مرتفع — يستدعي المتابعة',
+    body:'تجاوزت مؤشرات الموظف الحدود المعتادة (تأخير أو غياب متكرر أو خصم مالي ملحوظ)، ويُوصى بمراجعة الموظف من قبل المدير المباشر.'
+  },
+  crit: {
+    title:'مستوى حرج — يستدعي إجراءً فوريًا',
+    body:'بلغت مخالفات الموظف حدًا حرجًا (خصم مالي كبير و/أو غياب متكرر)، ويُوصى برفع الحالة إلى الموارد البشرية لاتخاذ الإجراء اللازم.'
+  }
+};
+
+function reportPageHtml(emp, seq, total){
+  const today = new Date().toLocaleDateString('ar-SA-u-nu-latn', { year:'numeric', month:'long', day:'numeric' });
+  const verdict = VERDICT_TEXT[emp.status];
+  return `
+  <div class="report-page">
+    <div class="rp-topbar">
+      <div class="rp-brand">
+        <div class="mark">ح.و</div>
+        <div>
+          <h2>تقرير الانضباط الوظيفي الفردي</h2>
+          <p>قسم متابعة الحضور والانصراف</p>
+        </div>
+      </div>
+      <div class="rp-meta">
+        <div>الفترة المرصودة: <b>26 أغسطس – 10 سبتمبر</b></div>
+        <div>تاريخ الإصدار: <b>${today}</b></div>
+        ${total > 1 ? `<div>تقرير <b>${seq}</b> من <b>${total}</b></div>` : ''}
+      </div>
+    </div>
+
+    <div class="rp-identity">
+      <div class="who">
+        <p class="name">${emp.name}</p>
+        <div class="meta-line">
+          <span class="dept-pill">${emp.dept}</span>
+          <span class="status-badge ${STATUS_CLASS[emp.status]}"><span class="d"></span>${STATUS_LABEL[emp.status]}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section-title"><span class="tag"></span>ملخص المؤشرات خلال الفترة</div>
+    <div class="rp-stat-grid">
+      <div class="rp-stat"><div class="n num">${emp.late}</div><div class="l">دقائق التأخير</div></div>
+      <div class="rp-stat"><div class="n num">${emp.perm}</div><div class="l">مجموع الاستئذانات</div></div>
+      <div class="rp-stat"><div class="n num">${emp.leave}</div><div class="l">مجموع الإجازات</div></div>
+      <div class="rp-stat"><div class="n num">${emp.absence}</div><div class="l">مجموع الغياب</div></div>
+    </div>
+    <div class="rp-deduction-box">
+      <span class="l">إجمالي الحسم المالي المستحق عن الفترة</span>
+      <span class="n num">${emp.deduction.toLocaleString('ar')} ر.س</span>
+    </div>
+
+    <div class="rp-section-title"><span class="tag"></span>تفصيل البيانات</div>
+    <table class="rp-table">
+      <thead><tr><th>البند</th><th>القيمة</th></tr></thead>
+      <tbody>
+        <tr><td>الاسم</td><td>${emp.name}</td></tr>
+        <tr><td>الإدارة</td><td>${emp.dept}</td></tr>
+        <tr><td>مجموع دقائق التأخير</td><td>${emp.late}</td></tr>
+        <tr><td>مجموع الاستئذانات</td><td>${emp.perm}</td></tr>
+        <tr><td>مجموع الإجازات</td><td>${emp.leave}</td></tr>
+        <tr><td>مجموع أيام الغياب</td><td>${emp.absence}</td></tr>
+        <tr><td>مجموع الحسم بالريال</td><td>${emp.deduction.toLocaleString('ar')} ر.س</td></tr>
+      </tbody>
+    </table>
+
+    <div class="rp-verdict ${STATUS_CLASS[emp.status]}">
+      <b>${verdict.title}</b>
+      ${verdict.body}
+    </div>
+
+    <div class="rp-signatures">
+      <div class="rp-sign"><div class="line"></div><div class="role">الموظف</div>الاسم والتوقيع والتاريخ</div>
+      <div class="rp-sign"><div class="line"></div><div class="role">المدير المباشر</div>الاسم والتوقيع والتاريخ</div>
+      <div class="rp-sign"><div class="line"></div><div class="role">الموارد البشرية</div>الاسم والتوقيع والتاريخ</div>
+    </div>
+
+    <div class="rp-footer">
+      <span>تقرير صادر آليًا من نظام متابعة الانضباط الوظيفي</span>
+      <span>${today}</span>
+    </div>
+  </div>`;
+}
+
+function printEmployees(list){
+  if(list.length === 0) return;
+  const area = document.getElementById('printArea');
+  area.innerHTML = list.map((emp,i)=>reportPageHtml(emp, i+1, list.length)).join('');
+  // give the browser a tick to lay out before invoking print
+  setTimeout(()=>window.print(), 50);
+}
+
+document.getElementById('tableBody').addEventListener('click', e=>{
+  const btn = e.target.closest('.print-btn');
+  if(!btn) return;
+  const idx = parseInt(btn.dataset.emp, 10);
+  printEmployees([DATA[idx]]);
+});
+
+document.getElementById('printAllBtn').addEventListener('click', ()=>{
+  const currentlyShown = DATA.filter(r =>
+    (activeDept==='all' || r.dept===activeDept) &&
+    (searchTerm==='' || r.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  sortRows(currentlyShown, sortField==='dept' ? 'deduction' : sortField, sortField==='dept' ? 'desc' : sortDir);
+  printEmployees(currentlyShown);
+});
+
+// ---------- Boot sequence ----------
+// Core interactive features (table, sort, filter, search) initialize first
+// and unconditionally. Charts are initialized after and isolated with
+// try/catch inside their own functions, so a chart failure can never
+// block sorting, filtering, or the table.
+renderChips();
+renderTable();
+renderDeptChart('deduction');
+renderStatusDoughnut();
+</script>
+
+</body>
+</html>
