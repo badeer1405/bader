@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دليل منصة العمل المرن «مرن»</title>
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap">
+<style>
+:root{--navy:#102A43;--navy2:#1B3A5C;--amber:#F0A202;--amberDark:#9A5B00;--teal:#2F8F83;--bg:#E4EAF0;--paper:#FDFEFF;--ink:#102A43;--muted:#486581;--line:#D9E2EC;--soft:#F4F6F8;--warn:#B42318;--warnBg:#FBEAEA;--okBg:#E6F4F1;--top:56px;--bottom:70px}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;font-size:18px;line-height:1.8}
+.js body{overflow:hidden}
+h1,h2,h3,h4{font-family:'Cairo',Tahoma,sans-serif;line-height:1.35;margin:0}
+a{color:var(--teal);font-weight:700}
+/* bars */
+.topbar{display:none}
+.js .topbar{position:fixed;top:0;left:0;right:0;height:var(--top);z-index:30;background:var(--navy);color:#F0F4F8;display:flex;align-items:center;gap:10px;padding:0 14px}
+.topbar .title{font-family:'Cairo';font-weight:700;font-size:17px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{font:inherit;font-family:'Cairo';font-weight:700;border:0;border-radius:10px;padding:8px 16px;cursor:pointer;font-size:15px;line-height:1.4}
+.btn-dark{background:var(--navy2);color:#F0F4F8}.btn-dark:hover{background:#244b74}
+.progress{display:none}
+.js .progress{display:block;position:fixed;top:var(--top);left:0;right:0;height:5px;background:#CBD5E0;z-index:30}
+.progress span{display:block;height:100%;background:var(--amber);width:0;transition:width .3s}
+.bottombar{display:none}
+.js .bottombar{position:fixed;bottom:0;left:0;right:0;height:var(--bottom);z-index:30;background:var(--paper);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:10px}
+.bottombar .count{color:#627D98;font-size:15px;white-space:nowrap}
+.btn-next{background:var(--navy);color:#fff;font-size:17px;padding:11px 22px}.btn-next:hover{background:var(--navy2)}
+.btn-prev{background:var(--soft);color:var(--navy);border:1px solid var(--line);font-size:17px;padding:10px 20px}
+.btn[disabled]{opacity:.35;cursor:default}
+/* stage */
+.stage{padding:12px}
+.js .stage{position:fixed;top:calc(var(--top) + 5px);bottom:var(--bottom);left:0;right:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:12px}
+.holder{position:relative}
+.page{display:block;max-width:900px;margin:0 auto 18px;background:var(--paper);border-radius:22px;box-shadow:0 8px 34px rgba(16,42,67,.12);padding:40px 46px 34px}
+.js .page{display:none;position:absolute;top:0;right:0;transform-origin:top right;margin:0;max-width:none}
+.js .page.active{display:block}
+.page.anim{animation:fade .35s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.kicker{color:var(--amberDark);font-weight:700;font-size:15px;margin-bottom:4px}
+.page h2{font-size:31px;margin-bottom:16px}
+.page h3{font-size:21px;margin:20px 0 10px}
+.page p{margin:0 0 12px}
+.lead{font-size:20px;color:var(--muted)}
+.box{background:var(--navy);color:#F0F4F8;border-radius:16px;padding:18px 22px;margin:16px 0}
+.box b{color:var(--amber)}
+.note{background:#FFF4DC;border-right:5px solid var(--amber);border-radius:12px;padding:14px 18px;margin:14px 0;color:#5a3b00}
+.warn{background:var(--warnBg);border-right:5px solid var(--warn);border-radius:12px;padding:14px 18px;margin:14px 0;color:#5C2A25}
+.ok{background:var(--okBg);border-right:5px solid var(--teal);border-radius:12px;padding:14px 18px;margin:14px 0;color:#1F4F49}
+.row{display:grid;gap:14px;margin:14px 0}
+.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h4{margin:0 0 6px;font-size:18px}
+.card p{margin:0;color:var(--muted);font-size:16px;line-height:1.7}
+.card.ok-c{background:var(--okBg);border-color:#bfe3dc}.card.bad-c{background:var(--warnBg);border-color:#f2c5c0}
+.ico{font-size:26px;line-height:1;margin-bottom:6px}
+.stat{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.stat .n{font-family:'Cairo';font-weight:800;font-size:40px;line-height:1.15;color:var(--navy)}
+.stat .l{color:var(--muted);font-size:15px;line-height:1.5}
+.stat.hl{background:var(--amber);border-color:var(--amber)}.stat.hl .n,.stat.hl .l{color:var(--navy)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:16px}
+th{background:var(--navy);color:#F0F4F8;font-family:'Cairo';font-weight:700;padding:10px 12px;text-align:right}
+td{padding:9px 12px;border-bottom:1px solid var(--line)}
+tr:nth-child(even) td{background:#F6F8FA}
+tr.total td{background:#FFF4DC;font-weight:700}
+ul.clean{padding-right:22px;margin:8px 0 12px}ul.clean li{margin-bottom:8px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{counter-increment:s;position:relative;padding:12px 60px 12px 14px;background:var(--soft);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.steps li::before{content:counter(s);position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;font-family:'Cairo';font-weight:800;display:flex;align-items:center;justify-content:center}
+details{background:var(--soft);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+summary{cursor:pointer;padding:11px 18px 11px 40px;font-weight:700;font-family:'Cairo';font-size:16.5px;list-style:none;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;left:16px;top:6px;font-size:24px;color:var(--teal)}
+details[open] summary{background:#E9EEF3}
+details[open] summary::after{content:"−"}
+details .a{padding:10px 18px 12px;color:var(--muted)}
+.src{font-size:14px;color:#627D98;border-top:1px dashed var(--line);margin-top:18px;padding-top:10px}
+.links{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.links a{display:flex;justify-content:space-between;align-items:center;background:#FFF4DC;border:1px solid var(--amber);border-radius:14px;padding:14px 18px;text-decoration:none;color:var(--navy)}
+.links a span.u{color:#627D98;font-weight:500;font-size:14px;direction:ltr}
+/* cover */
+.cover{background:var(--navy);color:#F0F4F8;overflow:hidden}
+.cover .inner{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;min-height:520px}
+.cover::before{content:"";position:absolute;right:0;top:0;bottom:0;width:12px;background:var(--amber)}
+.cover::after{content:"";position:absolute;left:-90px;top:-90px;width:300px;height:300px;border-radius:50%;background:var(--navy2)}
+.cover .kicker{color:var(--amber)}
+.cover h1{font-size:52px;margin:10px 0}
+.cover .sub{font-family:'Cairo';color:var(--amber);font-size:24px;font-weight:700}
+.cover p{color:#BCCCDC}
+.cover .start{display:none}
+.js .cover .start{display:inline-block;margin-top:22px;align-self:flex-start;background:var(--amber);color:var(--navy);font-size:18px;padding:12px 26px}
+/* toc */
+.toc{list-style:none;padding:0;margin:8px 0;columns:2;column-gap:28px}
+.toc li{border-bottom:1px solid var(--line);break-inside:avoid}
+.toc a{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;text-decoration:none;color:var(--ink);font-weight:500;font-size:16px}
+.toc a:hover{color:var(--teal)}.toc .pg{color:#627D98;font-weight:700}
+.drawer{position:fixed;inset:0;background:rgba(16,42,67,.45);display:none;z-index:50}
+.drawer.open{display:block}
+.drawer .panel{position:absolute;right:0;top:0;bottom:0;width:min(360px,88vw);background:var(--paper);padding:20px;overflow:auto}
+.drawer .toc{columns:1}
+/* calc */
+.calc{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0}
+.calc label{display:block;font-weight:700;margin-bottom:4px;font-size:15px}
+.calc input,.calc select{width:100%;font:inherit;font-size:18px;padding:9px 12px;border:1px solid #BCCCDC;border-radius:10px;background:#fff;color:var(--ink)}
+.calc .fields{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.calc .fields.f2{grid-template-columns:repeat(2,1fr)}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.res .stat{padding:10px}.res .stat .n{font-size:28px}
+.flag{margin-top:12px;font-weight:700;border-radius:12px;padding:11px 16px}
+.flag.bad{background:var(--warnBg);color:var(--warn)}.flag.good{background:var(--okBg);color:#1F5F57}.flag.mid{background:#FFF4DC;color:#7A4600}
+.small{font-size:14px;color:#627D98}
+.nojs-only{background:#FFF4DC;border-radius:12px;padding:10px 14px;margin:10px 0;color:#7A4600;font-weight:700}
+.js .nojs-only{display:none}
+@media (max-width:640px){
+  .page{padding:24px 18px 20px}.page h2{font-size:25px}.cover h1{font-size:36px}
+  .c3,.c2{grid-template-columns:1fr}.toc{columns:1}
+  .calc .fields{grid-template-columns:repeat(2,1fr)}.res{grid-template-columns:repeat(2,1fr)}
+  .btn-next,.btn-prev{font-size:15px;padding:9px 14px}
+  .stat .n{font-size:32px}
+}
+/* print / pdf */
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{height:auto;overflow:visible;background:#fff;font-size:12.5pt}
+  .topbar,.progress,.bottombar,.drawer,.noprint,.cover .start{display:none!important}
+  .stage{position:static;display:block;padding:0;overflow:visible}
+  .holder{width:auto!important;height:auto!important}
+  .page{display:block!important;position:static;transform:none!important;width:auto!important;box-shadow:none;border-radius:0;padding:0 0 8mm;break-after:page;page-break-after:always;animation:none}
+  .cover{padding:20mm 16mm;min-height:265mm}
+  .cover,.box,.stat.hl,th,.note,.warn,.ok,tr.total td,.flag,.links a,.steps li::before,.card.ok-c,.card.bad-c,details[open] summary{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details,.card,.stat,tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="btn btn-dark" id="menuBtn">☰ الفهرس</button>
+  <div class="title">دليل منصة العمل المرن «مرن»</div>
+  <button class="btn btn-dark" id="homeBtn">الغلاف</button>
+</div>
+<div class="progress"><span id="bar"></span></div>
+<div class="drawer" id="drawer"><div class="panel"><h3 style="margin-bottom:8px">الفهرس</h3><ul class="toc" id="tocSide"></ul></div></div>
+
+<div class="stage" id="stage"><div class="holder" id="holder">
+
+<section class="page cover" data-title="الغلاف">
+ <div class="inner">
+  <div class="kicker">دليل تخصصي مبسّط · نوفمبر 2026</div>
+  <h1>دليل منصة العمل المرن «مرن»</h1>
+  <div class="sub">الساعات · التأمينات الاجتماعية · الأسئلة الشائعة</div>
+  <p style="margin-top:18px">كل ما تحتاج المنشأة والعامل معرفته عن التعاقد بالساعة: الأحكام، وحدود الساعات، وطريقة احتساب التأمينات، مع أمثلة محسوبة وحاسبة تفاعلية.</p>
+  <p class="small" style="color:#BCCCDC">المراجع: منصة mrn.sa، والقرار الوزاري (153307)، والدليل الإجرائي لتنظيم العمل المرن، والمؤسسة العامة للتأمينات الاجتماعية.</p>
+  <button class="btn start" data-go="1">ابدأ القراءة ←</button>
+ </div>
+</section>
+
+<section class="page" data-title="الفهرس" data-notoc>
+  <div class="kicker">قبل أن تبدأ</div>
+  <h2>الفهرس</h2>
+  <p class="lead">اضغط على أي موضوع للانتقال إليه، أو تصفّح الكتاب بزر «الصفحة التالية» أسفل الشاشة.</p>
+  <ul class="toc" id="tocMain"></ul>
+</section>
+
+<section class="page" data-title="ما هي منصة «مرن»؟">
+  <div class="kicker">الفصل 1 · التعريف</div>
+  <h2>ما هي منصة «مرن»؟</h2>
+  <div class="box">العمل المرن: عمل يؤديه عامل لدى صاحب عمل واحد أو أكثر، <b>ويُحتسب أجره على أساس الساعة</b>.</div>
+  <p>منصة «مرن» هي البوابة الرسمية التي أطلقتها وزارة الموارد البشرية والتنمية الاجتماعية في أغسطس 2020 لتوثيق عقود العمل المرن بين العامل وصاحب العمل، وهي موقع حكومي مسجل لدى هيئة الحكومة الرقمية.</p>
+  <div class="row c3">
+    <div class="card"><div class="ico">🔒</div><h4>عقود موثقة</h4><p>عقد إلكتروني يحفظ حقوق الطرفين، ويُتحقق من البيانات عبر «أبشر».</p></div>
+    <div class="card"><div class="ico">⏱️</div><h4>أجر بالساعة</h4><p>الساعة وحدة الأجر، دون الالتزام بمنافع العقد التقليدي.</p></div>
+    <div class="card"><div class="ico">📅</div><h4>احتياج مؤقت</h4><p>للاحتياج الموسمي والمؤقت والأعمال التي لا تتطلب دواماً كاملاً.</p></div>
+  </div>
+  <div class="src">المصدر: mrn.sa</div>
+</section>
+
+<section class="page" data-title="المرجع الرسمي: القرار والدليل">
+  <div class="kicker">الفصل 1 · المرجع الرسمي</div>
+  <h2>القرار الوزاري والدليل الإجرائي</h2>
+  <p>صدر تنظيم العمل المرن بالقرار الوزاري رقم (146481) وتاريخ 7/9/1441هـ، ثم عُدّل بالقرار الوزاري رقم (153307) وتاريخ 11/11/1445هـ، ونُشر معه الدليل الإجرائي لتنظيم العمل المرن في جريدة أم القرى بتاريخ 13/11/1445هـ.</p>
+  <div class="links">
+    <a href="https://www.uqn.gov.sa/details?p=24993" target="_blank" rel="noopener"><b>القرار الوزاري رقم (153307) ↗</b><span class="u">uqn.gov.sa/details?p=24993</span></a>
+    <a href="https://www.uqn.gov.sa/details?p=24994" target="_blank" rel="noopener"><b>الدليل الإجرائي لتنظيم العمل المرن ↗</b><span class="u">uqn.gov.sa/details?p=24994</span></a>
+    <a href="https://mrn.sa/" target="_blank" rel="noopener"><b>منصة العمل المرن ↗</b><span class="u">mrn.sa</span></a>
+  </div>
+  <div class="src">المصدر: جريدة أم القرى.</div>
+</section>
+
+<section class="page" data-title="أطراف المنصة">
+  <div class="kicker">الفصل 2 · الأطراف</div>
+  <h2>ثلاثة أطراف، ولكلٍّ منها مكسب</h2>
+  <div class="row c3">
+    <div class="card"><div class="ico">👤</div><h4>العامل المرن</h4><p>مرونة تناسب ظروفه، ودخل إضافي، وخبرة عملية، وعقد موثق يحفظ حقه.</p></div>
+    <div class="card"><div class="ico">🏢</div><h4>المنشأة</h4><p>مرونة تشغيلية، وتعاقد أسرع ومنظم، وكفاءات وطنية للاحتياج المؤقت.</p></div>
+    <div class="card"><div class="ico">🤝</div><h4>مزودو الخدمة</h4><p>كيانات توظيف معتمدة من الوزارة، منها: أسعى، ومرن، وشفتات، وCashift.</p></div>
+  </div>
+  <p>يمكن للمنشأة التعاقد مباشرة مع العامل عبر المنصة، أو عن طريق أحد مزودي الخدمة المعتمدين.</p>
+  <div class="src">المصدر: mrn.sa</div>
+</section>
+
+<section class="page" data-title="شروط العامل المرن">
+  <div class="kicker">الفصل 2 · الشروط</div>
+  <h2>ثلاثة شروط قبل إنشاء أي عقد</h2>
+  <ol class="steps">
+    <li><b>سعودي الجنسية:</b> العمل المرن مقصور حالياً على السعوديين والسعوديات.</li>
+    <li><b>السن النظامي:</b> ضمن الفئات العمرية المسموح لها بالعمل في نظام العمل.</li>
+    <li><b>حساب في المنصة:</b> يسجّل العامل بنفسه، ويُتحقق من بياناته عبر «أبشر».</li>
+  </ol>
+  <div class="note">غير السعودي لا يُتعاقد معه عبر «مرن».</div>
+  <div class="src">المصادر: الدليل الإجرائي لتنظيم العمل المرن، ودليل خدمة العمل المرن في وزارة الموارد البشرية.</div>
+</section>
+
+<section class="page" data-title="أحكام العقد: ما لا يلزم">
+  <div class="kicker">الفصل 3 · أحكام العقد</div>
+  <h2>ما لا يلزم صاحب العمل في العقد المرن</h2>
+  <div class="row c2">
+    <div class="card"><div class="ico">🎁</div><h4>مكافأة نهاية الخدمة</h4><p>لا يلزم صاحب العمل بها.</p></div>
+    <div class="card"><div class="ico">🏖️</div><h4>الإجازات المدفوعة</h4><p>لا يلزم التعويض عنها: السنوية والمرضية والمناسبات.</p></div>
+    <div class="card"><div class="ico">🧪</div><h4>فترة التجربة</h4><p>لا تُطبَّق على العقد المرن.</p></div>
+    <div class="card"><div class="ico">🛡️</div><h4>اشتراك «ساند»</h4><p>لا يخضع له العقد، فالتأمينات معاشات وأخطار فقط.</p></div>
+  </div>
+  <div class="src">المصادر: القرار الوزاري (153307)، الدليل الإجرائي لتنظيم العمل المرن.</div>
+</section>
+
+<section class="page" data-title="أحكام العقد: ما يحكمه">
+  <div class="kicker">الفصل 3 · أحكام العقد</div>
+  <h2>ما يحكم العقد المرن</h2>
+  <table>
+    <tr><th style="width:28%">الحكم</th><th>التفصيل</th></tr>
+    <tr><td>شكل العقد</td><td>عقد إلكتروني موحَّد، محدد المدة، بأجر للساعة.</td></tr>
+    <tr><td>مدة العقد</td><td>سنة كحد أقصى لدى صاحب العمل الواحد، متصلة أو متفرقة. بعدها التجديد بموافقة العامل، أو عقد عمل عادي.</td></tr>
+    <tr><td>صرف الأجر</td><td>شهرياً أو حسب اتفاق الطرفين.</td></tr>
+    <tr><td>أوقات الحضور</td><td>تُحدد وتُعدّل باتفاق الطرفين.</td></tr>
+    <tr><td>قبول العمل</td><td>للعامل قبول الطلب أو رفضه دون أي إجراء ضده، مع مراعاة نص العقد.</td></tr>
+    <tr><td>نظام العمل</td><td>يسري في فترات الراحة، وفي شرط عدم المنافسة (المادة 83).</td></tr>
+    <tr><td>التوثيق</td><td>إلزامي في منصة العمل المرن.</td></tr>
+  </table>
+  <div class="src">المصادر: القرار الوزاري (153307)، الدليل الإجرائي لتنظيم العمل المرن.</div>
+</section>
+
+<section class="page" data-title="حدود الساعات">
+  <div class="kicker">الفصل 4 · الساعات</div>
+  <h2>خمسة أرقام تحكم جدول العامل المرن</h2>
+  <div class="row c3">
+    <div class="stat"><div class="n">12</div><div class="l">ساعة حداً أعلى في اليوم</div></div>
+    <div class="stat"><div class="n">95</div><div class="l">ساعة أساسية شهرياً لدى المنشأة</div></div>
+    <div class="stat"><div class="n">65</div><div class="l">ساعة إضافية فوق الأساسية</div></div>
+  </div>
+  <div class="row c2">
+    <div class="stat hl"><div class="n">160</div><div class="l">ساعة إجمالي الشهر (30 يوماً)</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">لا حد أدنى للساعات</div></div>
+  </div>
+  <p>ما زاد على 95 ساعة في الشهر لدى المنشأة يُعد ساعات إضافية، ويجوز باتفاق الطرفين أن يكون أجرها مثل أجر الساعة الأساسية.</p>
+  <div class="src">المصادر: mrn.sa (صفحة المنشآت والأسئلة الشائعة)، القرار الوزاري (153307).</div>
+</section>
+
+<section class="page" data-title="أمثلة على الساعات">
+  <div class="kicker">الفصل 4 · أمثلة</div>
+  <h2>كيف تُطبَّق الحدود على العقد؟</h2>
+  <table>
+    <tr><th>الحالة</th><th>الحساب</th><th>النتيجة</th></tr>
+    <tr><td>عقد مدته 10 أيام</td><td>10 × 12</td><td>120 ساعة حداً أعلى: 95 أساسية + 25 إضافية</td></tr>
+    <tr><td>عقد 5 أيام أُلغي في اليوم الثالث</td><td>3 × 12</td><td>36 ساعة حداً أعلى، والأدنى صفر</td></tr>
+    <tr><td>عامل عمل 110 ساعات في الشهر</td><td>110 − 95</td><td>95 أساسية + 15 إضافية</td></tr>
+  </table>
+  <div class="box"><b>القاعدة:</b> الحد الأعلى للعقد = عدد أيامه × 12 ساعة، ولا يتجاوز 160 ساعة في الشهر.</div>
+  <div class="src">المثالان الأول والثاني من صفحة المنشآت في mrn.sa، والثالث تطبيق لقاعدة 95 ساعة.</div>
+</section>
+
+<section class="page" data-title="الحد الأدنى لأجر الساعة: 25 ريالاً">
+  <div class="kicker">الفصل 5 · أجر الساعة</div>
+  <h2>25 ريالاً للساعة شرط للتسجيل في التأمينات</h2>
+  <p class="lead">حددت الوزارة الحد الأدنى لأجر العمل المرن بـ25 ريالاً للساعة.</p>
+  <div class="row c2">
+    <div class="card ok-c"><div class="ico">✅</div><h4>25 ريالاً فأكثر</h4><p>يُرسَل العقد إلى التأمينات ويُسجَّل العامل تلقائياً، وتُحتسب مدة الخدمة، وتصدر الفاتورة الشهرية.</p></div>
+    <div class="card bad-c"><div class="ico">⚠️</div><h4>أقل من 25 ريالاً</h4><p>يُنشأ العقد في المنصة، لكن <b>لا يُرسَل إلى التأمينات</b>، فلا تُحتسب للعامل مدة خدمة.</p></div>
+  </div>
+  <div class="box"><b>قاعدة سريعة:</b> أقصى عدد ساعات لأي مكافأة شهرية = المكافأة ÷ 25.</div>
+  <div class="src">المصادر: تصريح وزارة الموارد البشرية (صحيفة اليوم)، وملاحظة نموذج الرفع الجماعي في منصة مرن.</div>
+</section>
+
+<section class="page" data-title="مثال: أجر أقل من 25 ريالاً">
+  <div class="kicker">الفصل 5 · مثال</div>
+  <h2>مكافأة 600 ريال مقابل 32 ساعة</h2>
+  <div class="warn">600 ÷ 32 = <b>18.75 ريالاً للساعة</b>، أي أقل من الحد، فلن يُرسل العقد للتأمينات.</div>
+  <div class="row c2">
+    <div class="card"><h4>الحل الأول: رفع الأجر</h4><p>32 ساعة × 25 = <b>800 ريال</b> شهرياً.</p></div>
+    <div class="card"><h4>الحل الثاني: موازنة الساعات</h4><p>إبقاء 600 ريال مع <b>24 ساعة</b> فقط (600 ÷ 25).</p></div>
+  </div>
+  <div class="note">يجب أن تطابق الساعات المسجلة في المنصة الساعات الفعلية. تسجيل ساعات أقل مما يعمله العامل فعلاً مخالفة، ويبقى حقه في الساعات الزائدة قائماً.</div>
+</section>
+
+<section class="page" data-title="التأمينات: نسب الاشتراك والحسم">
+  <div class="kicker">الفصل 6 · التأمينات الاجتماعية</div>
+  <h2>نسب الاشتراك والحسم</h2>
+  <p>يخضع العقد المرن لفرعين فقط: <b>المعاشات</b> و<b>الأخطار المهنية</b>، ولا يخضع لـ«ساند».</p>
+  <table>
+    <tr><th>الفرع</th><th>على المنشأة</th><th>يُحسم من العامل</th><th>الإجمالي</th></tr>
+    <tr><td>المعاشات · النظام الجديد (الحالي)</td><td>10%</td><td>10%</td><td>20%</td></tr>
+    <tr><td>المعاشات · من سُجّل قبل 3 يوليو 2024</td><td>9%</td><td>9%</td><td>18%</td></tr>
+    <tr><td>الأخطار المهنية</td><td>2%</td><td>لا شيء</td><td>2%</td></tr>
+    <tr><td>ساند</td><td colspan="3">لا يُطبَّق على العمل المرن</td></tr>
+    <tr class="total"><td>المجموع (النظام الجديد)</td><td>12%</td><td>10%</td><td>22%</td></tr>
+  </table>
+  <div class="note">الأخطار المهنية 2% تتحملها المنشأة كاملة، ولا يُحسم من العامل شيء.</div>
+  <div class="src">المصادر: المؤسسة العامة للتأمينات الاجتماعية، دليل خدمة العمل المرن.</div>
+</section>
+
+<section class="page" data-title="الزيادة التدريجية في نسبة المعاشات">
+  <div class="kicker">الفصل 6 · التأمينات الاجتماعية</div>
+  <h2>الزيادة التدريجية في نسبة المعاشات</h2>
+  <p>في نظام التأمينات الجديد، تزيد نسبة المعاشات 0.5% كل يوليو على كل من المنشأة والعامل حتى تبلغ 11%.</p>
+  <table>
+    <tr><th>التاريخ</th><th>على المنشأة</th><th>يُحسم من العامل</th></tr>
+    <tr><td>3 يوليو 2024</td><td>9%</td><td>9%</td></tr>
+    <tr><td>1 يوليو 2025</td><td>9.5%</td><td>9.5%</td></tr>
+    <tr class="total"><td>1 يوليو 2026 (الحالي)</td><td>10%</td><td>10%</td></tr>
+    <tr><td>1 يوليو 2027</td><td>10.5%</td><td>10.5%</td></tr>
+    <tr><td>1 يوليو 2028</td><td>11%</td><td>11%</td></tr>
+  </table>
+  <div class="src">المصدر: المؤسسة العامة للتأمينات الاجتماعية، الدليل التعريفي للزيادة التدريجية.</div>
+</section>
+
+<section class="page" data-title="آلية الفوترة">
+  <div class="kicker">الفصل 7 · الفوترة</div>
+  <h2>من الساعات إلى شهر الاشتراك</h2>
+  <ol class="steps">
+    <li><b>كل 8 ساعات = يوم اشتراك</b> يُفوتر على المنشأة التي عمل لديها العامل.</li>
+    <li><b>أقل من 8 ساعات:</b> لا تُحتسب، وتُحفظ رصيداً حتى تكتمل.</li>
+    <li><b>30 يوم عمل = شهر اشتراك</b> للعامل، ولو من أكثر من منشأة.</li>
+    <li><b>الفاتورة</b> تصل المنشأة بداية كل شهر ميلادي.</li>
+    <li><b>التسجيل إلزامي</b> لأي عقد مرن، ويتم تلقائياً عند التوثيق.</li>
+  </ol>
+  <div class="src">المصادر: الأسئلة الشائعة في mrn.sa، الدليل الإجرائي لتنظيم العمل المرن.</div>
+</section>
+
+<section class="page" data-title="مثال: رصيد الساعات">
+  <div class="kicker">الفصل 7 · مثال</div>
+  <h2>الساعات الناقصة لا تضيع، بل تُرحَّل</h2>
+  <table>
+    <tr><th>الشهر</th><th>ساعات الشهر</th><th>رصيد سابق</th><th>المجموع</th><th>أيام مُفوترة</th><th>رصيد مُرحَّل</th></tr>
+    <tr><td>الأول</td><td>20</td><td>0</td><td>20</td><td>2</td><td>4</td></tr>
+    <tr><td>الثاني</td><td>30</td><td>4</td><td>34</td><td>4</td><td>2</td></tr>
+    <tr><td>الثالث</td><td>22</td><td>2</td><td>24</td><td>3</td><td>0</td></tr>
+    <tr class="total"><td>المجموع</td><td>72</td><td>—</td><td>72</td><td>9 أيام</td><td>—</td></tr>
+  </table>
+  <div class="box">72 ساعة ÷ 8 = <b>9 أيام كاملة</b>. كل ساعة عملها العامل احتُسبت له في النهاية.</div>
+  <div class="src">مثال توضيحي مبني على قواعد الأسئلة الشائعة في mrn.sa.</div>
+</section>
+
+<section class="page" data-title="مثال: العمل لدى منشأتين">
+  <div class="kicker">الفصل 7 · مثال</div>
+  <h2>كل منشأة تدفع عن ساعاتها فقط</h2>
+  <table>
+    <tr><th>المنشأة</th><th>الساعات</th><th>تُفوتر</th><th>الرصيد</th></tr>
+    <tr><td>المنشأة «أ»</td><td>50</td><td>6 أيام (48 ساعة)</td><td>ساعتان</td></tr>
+    <tr><td>المنشأة «ب»</td><td>45</td><td>5 أيام (40 ساعة)</td><td>5 ساعات</td></tr>
+    <tr class="total"><td>مدة الخدمة للعامل</td><td>95</td><td>11 يوماً</td><td>7 ساعات</td></tr>
+  </table>
+  <p>كل منشأة تستقل بحدها الشهري (95 أساسية و160 إجمالاً) وبفاتورتها، وتتجمع مدة الاشتراك للعامل من المنشأتين.</p>
+  <div class="src">مثال توضيحي مبني على قواعد الأسئلة الشائعة في mrn.sa.</div>
+</section>
+
+<section class="page" data-title="مثال: حساب مبلغ الاشتراك">
+  <div class="kicker">الفصل 8 · مثال محسوب</div>
+  <h2>عامل بأجر 40 ريالاً للساعة، عمل 40 ساعة</h2>
+  <div class="row c3">
+    <div class="stat"><div class="n">1,600</div><div class="l">الأجر الشهري (40 × 40)</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">أيام اشتراك (40 ÷ 8)</div></div>
+    <div class="stat"><div class="n">1,440</div><div class="l">صافي العامل</div></div>
+  </div>
+  <table>
+    <tr><th>البند</th><th>الحساب</th><th>المبلغ</th></tr>
+    <tr><td>على المنشأة: معاشات 10%</td><td>1,600 × 10%</td><td>160</td></tr>
+    <tr><td>على المنشأة: أخطار 2%</td><td>1,600 × 2%</td><td>32</td></tr>
+    <tr class="total"><td>إجمالي حصة المنشأة</td><td>12%</td><td>192 ريالاً</td></tr>
+    <tr class="total"><td>يُحسم من العامل</td><td>10%</td><td>160 ريالاً</td></tr>
+    <tr><td>إجمالي الفاتورة</td><td>192 + 160</td><td>352 ريالاً</td></tr>
+  </table>
+  <p class="small">أجر افتراضي للتوضيح. لو كان العامل على النظام القديم: على المنشأة 11% (176)، ويُحسم منه 9% (144).</p>
+</section>
+
+<section class="page" data-title="الأسئلة الشائعة: الساعات">
+  <div class="kicker">الفصل 9 · الأسئلة الشائعة</div>
+  <h2>أسئلة عن الساعات</h2>
+  <p class="small">اضغط على السؤال لإظهار الإجابة.</p>
+  <details><summary>ما الحد الأعلى للساعات لدى منشأة واحدة؟</summary><div class="a">95 ساعة شهرياً، وما زاد على ذلك يُحتسب ساعات عمل إضافية، ولا يوجد حد أدنى.</div></details>
+  <details><summary>ما الحد اليومي لساعات العامل؟</summary><div class="a">12 ساعة في اليوم، في منشأة واحدة أو أكثر.</div></details>
+  <details><summary>ما الحد الشهري الإجمالي؟</summary><div class="a">160 ساعة في الشهر (30 يوماً ميلادياً)، منها 95 ساعة أساسية و65 ساعة إضافية.</div></details>
+  <details><summary>هل يجب أن تُدفع الساعات الإضافية بأجر أعلى؟</summary><div class="a">يجوز باتفاق الطرفين أن يكون أجرها مثل أجر الساعة الأساسية.</div></details>
+  <details><summary>هل يمكن تعديل أوقات الحضور؟</summary><div class="a">نعم، تُحدد أوقات الحضور وتُعدّل باتفاق الطرفين.</div></details>
+  <details><summary>ما مدة العقد لدى المنشأة نفسها؟</summary><div class="a">سنة كحد أقصى، متصلة أو متفرقة. بعدها التجديد بموافقة العامل، أو إبرام عقد عمل عادي يخضع لنظام العمل.</div></details>
+  <details><summary>هل يوجد حد لعدد العاملين المرنين في المنشأة؟</summary><div class="a">لا حد أعلى لعدد العقود، لكن نطاقات لا تحتسب منهم إلا ما نسبته 20% من إجمالي العاملين السعوديين.</div></details>
+  <div class="src">المصادر: الأسئلة الشائعة وصفحة المنشآت في mrn.sa، الدليل الإجرائي.</div>
+</section>
+
+<section class="page" data-title="الأسئلة الشائعة: التأمينات">
+  <div class="kicker">الفصل 10 · الأسئلة الشائعة</div>
+  <h2>أسئلة عن التأمينات الاجتماعية</h2>
+  <p class="small">اضغط على السؤال لإظهار الإجابة.</p>
+  <details><summary>هل التسجيل في التأمينات إلزامي على كل منشأة يعمل لديها؟</summary><div class="a">نعم، أي عقد عمل مرن يلزم تسجيله في المؤسسة العامة للتأمينات الاجتماعية.</div></details>
+  <details><summary>كيف تُحتسب ساعات العمل المرن في التأمينات؟</summary><div class="a">عند اكتمال 8 ساعات في المنشأة تُفوتر يوم عمل.</div></details>
+  <details><summary>ماذا لو أكمل العامل أقل من 8 ساعات؟</summary><div class="a">لا تُحتسب، ويُحتفظ بالساعات رصيداً.</div></details>
+  <details><summary>وإن أكمل أكثر من 95 ساعة في منشأة واحدة؟</summary><div class="a">تُحتسب كل 8 ساعات يوم عمل حسب الساعات لدى كل منشأة، ويُحتسب شهر اشتراك بعد اكتمال 30 يوم عمل.</div></details>
+  <details><summary>متى تصدر الفاتورة؟</summary><div class="a">بداية الشهر الميلادي، والساعات المتخطية للنصاب تبقى رصيداً حتى تكتمل 8 ساعات.</div></details>
+  <details><summary>ما الفروع التي يخضع لها العقد المرن؟</summary><div class="a">المعاشات والأخطار المهنية فقط، ولا يخضع لـ«ساند».</div></details>
+  <details><summary>كم يُحسم من العامل؟ وكم تدفع المنشأة؟</summary><div class="a">في النظام الجديد حالياً: يُحسم من العامل 10% معاشات، وتدفع المنشأة 10% معاشات + 2% أخطار مهنية = 12%.</div></details>
+  <details><summary>هل يُسجَّل أي أجر في التأمينات؟</summary><div class="a">لا، إذا قل أجر الساعة عن 25 ريالاً يُنشأ العقد لكن لا يُرسل إلى التأمينات.</div></details>
+  <div class="src">المصادر: قسم التأمينات في الأسئلة الشائعة بمنصة mrn.sa، المؤسسة العامة للتأمينات الاجتماعية، نموذج الرفع الجماعي.</div>
+</section>
+
+<section class="page" data-title="العمل المرن ونطاقات">
+  <div class="kicker">الفصل 11 · نطاقات</div>
+  <h2>كل 160 ساعة منجزة = نقطة توطين</h2>
+  <div class="row c3">
+    <div class="stat hl"><div class="n">160</div><div class="l">ساعة لعامل أو لمجموعة عاملين = نقطة</div></div>
+    <div class="stat"><div class="n">20%</div><div class="l">حد أقصى من إجمالي العاملين السعوديين</div></div>
+    <div class="stat"><div class="n">مفتوح</div><div class="l">لا حد لعدد العقود المرنة</div></div>
+  </div>
+  <div class="box"><b>مثال:</b> 4 عاملين يعمل كل منهم 40 ساعة في الشهر = 160 ساعة = نقطة توطين واحدة للمنشأة.</div>
+  <p>للوزارة تعديل نسبة الـ20%، وتخضع الأوزان وآلية الاحتساب لضوابط برنامج نطاقات.</p>
+  <div class="src">المصادر: القرار الوزاري (153307)، الدليل الإجرائي، الأسئلة الشائعة في mrn.sa.</div>
+</section>
+
+<section class="page" data-title="خطوات العمل في المنصة">
+  <div class="kicker">الفصل 12 · التطبيق</div>
+  <h2>ست خطوات من الحساب إلى الفاتورة</h2>
+  <ol class="steps">
+    <li><b>حساب المنشأة:</b> إنشاء حساب للمنشأة في mrn.sa وتسجيل بياناتها.</li>
+    <li><b>تسجيل العامل:</b> يسجّل العامل بنفسه، ويُتحقق من بياناته عبر «أبشر».</li>
+    <li><b>إنشاء العقد:</b> أجر الساعة والمدة والساعات، فردياً أو بالرفع الجماعي.</li>
+    <li><b>موافقة العامل:</b> يطّلع على العقد ويوافق عليه، فيُوثَّق.</li>
+    <li><b>التأمينات تلقائياً:</b> يُسجَّل العامل عند التوثيق (إن كان أجر الساعة 25 ريالاً فأكثر).</li>
+    <li><b>الساعات والفاتورة:</b> إدخال الساعات المنجزة، وسداد فاتورة التأمينات بداية كل شهر.</li>
+  </ol>
+  <div class="src">المصادر: mrn.sa، دليل خدمة العمل المرن.</div>
+</section>
+
+<section class="page" data-title="بيانات نموذج الرفع الجماعي">
+  <div class="kicker">الفصل 12 · التطبيق</div>
+  <h2>البيانات المطلوبة في نموذج الرفع الجماعي</h2>
+  <table>
+    <tr><th>بيانات العقد</th><th>بيانات العامل</th></tr>
+    <tr><td>المسمى الوظيفي</td><td>رقم الهوية الوطنية</td></tr>
+    <tr><td>تاريخ البداية والنهاية (يوم-شهر-سنة)</td><td>تاريخ الميلاد (هجري)</td></tr>
+    <tr><td>أجر الساعة وإجمالي الساعات</td><td>رقم الجوال</td></tr>
+    <tr><td>رمز المدينة</td><td>—</td></tr>
+    <tr><td>رمز المسمى الوظيفي في التأمينات</td><td>—</td></tr>
+    <tr><td>طريقة صرف الأجر ودوريته</td><td>—</td></tr>
+  </table>
+  <div class="note">طريقة الصرف ودوريته تُكتب في النموذج بالإنجليزي، مثل BANK_TRANSFER وMONTHLY، والرموز أرقاماً فقط.</div>
+  <div class="src">المصدر: نموذج الرفع الجماعي لمنصة مرن.</div>
+</section>
+
+<section class="page" data-title="الحاسبة: الاشتراك والصافي">
+  <div class="kicker">أداة عملية</div>
+  <h2>حاسبة الاشتراك والصافي</h2>
+  <p class="nojs-only">الحاسبة تعمل عند فتح الكتاب في المتصفح (Safari أو Chrome)، ولا تعمل في معاينة الملفات.</p>
+  <div class="calc">
+    <div class="fields">
+      <div><label for="cRate">أجر الساعة (ريال)</label><input id="cRate" type="number" min="0" step="0.25" value="40"></div>
+      <div><label for="cHours">ساعات الشهر</label><input id="cHours" type="number" min="0" step="1" value="40"></div>
+      <div><label for="cBal">رصيد سابق</label><input id="cBal" type="number" min="0" max="7" step="1" value="0"></div>
+      <div><label for="cSys">النظام</label><select id="cSys"><option value="10">الجديد (10%)</option><option value="9">القديم (9%)</option></select></div>
+    </div>
+    <div id="cFlag" class="flag good"></div>
+    <div class="res">
+      <div class="stat"><div class="n" id="rWage">—</div><div class="l">الأجر الشهري</div></div>
+      <div class="stat"><div class="n" id="rDays">—</div><div class="l">أيام تُفوتر</div></div>
+      <div class="stat"><div class="n" id="rLeft">—</div><div class="l">رصيد مُرحَّل</div></div>
+      <div class="stat hl"><div class="n" id="rEmp">—</div><div class="l">على المنشأة</div></div>
+      <div class="stat"><div class="n" id="rWork">—</div><div class="l">يُحسم من العامل</div></div>
+      <div class="stat"><div class="n" id="rNet">—</div><div class="l">صافي العامل</div></div>
+    </div>
+    <p class="small" style="margin:10px 0 0" id="rDetail"></p>
+  </div>
+  <p class="small">تقديرية: الاشتراك على أجر الأيام المُفوترة (أجر الساعة × 8 × الأيام)، وكسور اليوم تُرحّل. المرجع النهائي فاتورة التأمينات.</p>
+</section>
+
+<section class="page" data-title="الحاسبة: هل تكفي المكافأة؟">
+  <div class="kicker">أداة عملية</div>
+  <h2>كم ساعة تكفي هذه المكافأة؟</h2>
+  <p class="nojs-only">الحاسبة تعمل عند فتح الكتاب في المتصفح (Safari أو Chrome)، ولا تعمل في معاينة الملفات.</p>
+  <p class="lead">أدخل المكافأة الشهرية وعدد الساعات الفعلية، لتعرف هل يبلغ أجر الساعة 25 ريالاً.</p>
+  <div class="calc">
+    <div class="fields f2">
+      <div><label for="mAmt">المكافأة الشهرية (ريال)</label><input id="mAmt" type="number" min="0" step="50" value="600"></div>
+      <div><label for="mHrs">الساعات الفعلية في الشهر</label><input id="mHrs" type="number" min="0" step="1" value="32"></div>
+    </div>
+    <div id="mFlag" class="flag good"></div>
+    <div class="res">
+      <div class="stat"><div class="n" id="mRate">—</div><div class="l">أجر الساعة الناتج</div></div>
+      <div class="stat"><div class="n" id="mMax">—</div><div class="l">أقصى ساعات بأجر 25</div></div>
+      <div class="stat hl"><div class="n" id="mNeed">—</div><div class="l">المكافأة اللازمة لهذه الساعات</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-title="الخلاصة">
+  <div class="kicker">الختام</div>
+  <h2>ست قواعد تكفي لإدارة العمل المرن</h2>
+  <div class="row c2">
+    <div class="card"><h4>⏱️ الساعات</h4><p>95 أساسية، و160 إجمالاً، و12 يومياً، ولا حد أدنى.</p></div>
+    <div class="card"><h4>👤 العامل</h4><p>سعودي فقط، بعقد إلكتروني موثق، وسنة كحد أقصى لدى المنشأة.</p></div>
+    <div class="card"><h4>💰 الأجر</h4><p>25 ريالاً للساعة فأكثر ليُسجَّل في التأمينات.</p></div>
+    <div class="card"><h4>🛡️ التأمينات</h4><p>المنشأة 12%، ويُحسم من العامل 10%، ولا ساند.</p></div>
+    <div class="card"><h4>🧾 الفوترة</h4><p>كل 8 ساعات يوم اشتراك، والباقي رصيد، والفاتورة أول كل شهر.</p></div>
+    <div class="card"><h4>📊 نطاقات</h4><p>160 ساعة منجزة = نقطة، بحد 20% من السعوديين.</p></div>
+  </div>
+</section>
+
+<section class="page" data-title="المراجع">
+  <div class="kicker">الختام</div>
+  <h2>المراجع</h2>
+  <div class="links">
+    <a href="https://mrn.sa/" target="_blank" rel="noopener"><b>منصة العمل المرن</b><span class="u">mrn.sa</span></a>
+    <a href="https://mrn.sa/faq/" target="_blank" rel="noopener"><b>الأسئلة الشائعة في منصة مرن</b><span class="u">mrn.sa/faq</span></a>
+    <a href="https://www.uqn.gov.sa/details?p=24993" target="_blank" rel="noopener"><b>القرار الوزاري رقم (153307)</b><span class="u">uqn.gov.sa</span></a>
+    <a href="https://www.uqn.gov.sa/details?p=24994" target="_blank" rel="noopener"><b>الدليل الإجرائي لتنظيم العمل المرن</b><span class="u">uqn.gov.sa</span></a>
+    <a href="https://awareness.gosi.gov.sa/pdf/Contributions.pdf" target="_blank" rel="noopener"><b>التأمينات: الزيادة التدريجية لنسب الاشتراك</b><span class="u">gosi.gov.sa</span></a>
+  </div>
+  <p class="small">هذا الدليل للتوعية والتبسيط، والمرجع النهائي هو الأنظمة والقرارات الرسمية وما يصدر عن المنصة والتأمينات الاجتماعية.</p>
+</section>
+
+</div></div>
+
+<div class="bottombar">
+  <button class="btn btn-prev" id="prevBtn">→ السابقة</button>
+  <span class="count" id="count"></span>
+  <button class="btn btn-next" id="nextBtn">الصفحة التالية ←</button>
+</div>
+
+<script>
+try{(function(){
+  const $=id=>document.getElementById(id);
+  const pages=[...document.querySelectorAll('#holder > section')];
+  const total=pages.length, stage=$('stage'), holder=$('holder');
+  let cur=0;
+  pages.forEach((p,i)=>p.id='p'+(i+1));
+  const mk=ul=>pages.forEach((p,i)=>{if(i<2)return;const li=document.createElement('li'),a=document.createElement('a');a.href='#p'+(i+1);
+    a.innerHTML='<span>'+p.dataset.title+'</span><span class="pg">'+(i+1)+'</span>';a.onclick=e=>{e.preventDefault();go(i);drawer.classList.remove('open');};li.appendChild(a);ul.appendChild(li);});
+  const drawer=$('drawer');
+  mk($('tocMain'));mk($('tocSide'));
+  function fit(){
+    const p=pages[cur];
+    const W=stage.clientWidth-24, H=stage.clientHeight-24;
+    const w=Math.min(900,W);
+    p.style.transform='none';p.style.width=w+'px';
+    const h=p.offsetHeight;
+    let s=Math.min(1,H/h);
+    const minS=W<640?0.7:0.6;
+    if(s<minS)s=minS;
+    p.style.transform='scale('+s+')';
+    holder.style.width=(w*s)+'px';holder.style.height=(h*s)+'px';
+  }
+  function go(i,anim=true){
+    if(i<0||i>=total)return;
+    pages[cur].classList.remove('active','anim');cur=i;
+    const p=pages[cur];p.classList.add('active');if(anim)p.classList.add('anim');
+    $('bar').style.width=((cur+1)/total*100)+'%';
+    $('count').textContent='صفحة '+(cur+1)+' من '+total;
+    $('prevBtn').disabled=cur===0;
+    $('nextBtn').textContent=cur===total-1?'العودة إلى الغلاف':'الصفحة التالية ←';
+    try{if(location.hash!=='#p'+(cur+1))history.replaceState(null,'','#p'+(cur+1));}catch(e){}
+    stage.scrollTop=0;fit();
+  }
+  $('nextBtn').onclick=()=>go(cur===total-1?0:cur+1);
+  $('prevBtn').onclick=()=>go(cur-1);
+  $('homeBtn').onclick=()=>go(0);
+  $('menuBtn').onclick=()=>drawer.classList.add('open');
+  drawer.onclick=e=>{if(e.target===drawer)drawer.classList.remove('open');};
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+  document.querySelectorAll('details').forEach(d=>d.addEventListener('toggle',fit));
+  document.addEventListener('keydown',e=>{if(e.target.matches('input,select'))return;if(e.key==='ArrowLeft')go(cur+1);if(e.key==='ArrowRight')go(cur-1);});
+  window.addEventListener('resize',fit);
+  window.addEventListener('hashchange',()=>{const m=/^#p(\d+)$/.exec(location.hash);if(m)go(Math.min(Math.max(+m[1]-1,0),total-1));});
+  // swipe
+  let sx=null;stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
+  stage.addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>70){dx>0?go(cur+1):go(cur-1);}sx=null;},{passive:true});
+  const m=/^#p(\d+)$/.exec(location.hash);
+  go(m?Math.min(Math.max(+m[1]-1,0),total-1):0,false);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+
+  // calculators
+  const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+  function calc(){
+    const rate=Math.max(0,+$('cRate').value||0),hrs=Math.max(0,+$('cHours').value||0),bal=Math.max(0,+$('cBal').value||0),pen=+$('cSys').value/100;
+    const wage=rate*hrs,all=hrs+bal,days=Math.floor(all/8),left=all-days*8,base=days*8*rate,sent=rate>=25;
+    const emp=sent?base*(pen+0.02):0,work=sent?base*pen:0;
+    $('rWage').textContent=fmt(wage);$('rDays').textContent=sent?days:0;$('rLeft').textContent=sent?left:'—';
+    $('rEmp').textContent=fmt(emp);$('rWork').textContent=fmt(work);$('rNet').textContent=fmt(wage-work);
+    const f=$('cFlag');let msg,cls='good';
+    if(rate<25){msg='أجر الساعة أقل من 25 ريالاً: يُنشأ العقد لكن لا يُرسل إلى التأمينات.';cls='bad';}
+    else if(hrs>160){msg='الساعات تتجاوز الحد الأعلى (160 ساعة في الشهر لدى المنشأة).';cls='bad';}
+    else if(hrs>95){msg='الأجر مقبول. تنبيه: '+(hrs-95)+' ساعة من هذه الساعات إضافية (فوق 95).';cls='mid';}
+    else msg='الأجر مقبول (25 ريالاً فأكثر)، والساعات ضمن الحد الأساسي.';
+    f.className='flag '+cls;f.textContent=msg;
+    $('rDetail').textContent=sent?('الأجر الخاضع = '+days+' يوم × 8 × '+fmt(rate)+' = '+fmt(base)+' ريال · المنشأة: معاشات '+fmt(base*pen)+' + أخطار '+fmt(base*0.02)+' · إجمالي الفاتورة '+fmt(emp+work)+' ريال'):'';
+  }
+  function mcalc(){
+    const amt=Math.max(0,+$('mAmt').value||0),h=Math.max(0,+$('mHrs').value||0);
+    const maxH=Math.floor(amt/25),r=h?amt/h:0,need=h*25;
+    $('mRate').textContent=h?fmt(r):'—';$('mMax').textContent=maxH;$('mNeed').textContent=fmt(need);
+    const f=$('mFlag');
+    if(!h){f.className='flag mid';f.textContent='أدخل عدد الساعات الفعلية.';return;}
+    if(r>=25){f.className='flag good';f.textContent='أجر الساعة '+fmt(r)+' ريال، مقبول ويُسجَّل في التأمينات.';}
+    else{f.className='flag bad';f.textContent='أجر الساعة '+fmt(r)+' ريال، أقل من 25. الحل: رفع المكافأة إلى '+fmt(need)+' ريال، أو تقليل الساعات إلى '+maxH+' ساعة.';}
+  }
+  ['cRate','cHours','cBal','cSys'].forEach(id=>$(id).addEventListener('input',calc));
+  ['mAmt','mHrs'].forEach(id=>$(id).addEventListener('input',mcalc));
+  calc();mcalc();
+  window.__printMode=function(){document.querySelectorAll('details').forEach(d=>d.open=true);};
+})();}catch(e){document.documentElement.classList.remove('js');}
+</script>
+</body>
+</html>
